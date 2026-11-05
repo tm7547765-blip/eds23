@@ -61,8 +61,8 @@ on:
 # ─── WINDOWS RDP JOB ─────────────────────────────────────────────────────────
 jobs:
   rdp-setup:
-    if: "startsWith(inputs.windows_version, 'windows') || startsWith(inputs.windows_version, 'win') || inputs.windows_version == ''"
-    runs-on: ${{ (inputs.windows_version == 'windows-2025' || inputs.windows_version == 'win2025-ai') && 'windows-2025' || 'windows-2022' }}
+    if: startsWith(github.event.inputs.windows_version, 'windows') || startsWith(github.event.inputs.windows_version, 'win') || github.event.inputs.windows_version == '' || github.event.inputs.windows_version == null
+    runs-on: ${{ (github.event.inputs.windows_version == 'windows-2025' || github.event.inputs.windows_version == 'win2025-ai') && 'windows-2025' || 'windows-2022' }}
     timeout-minutes: 360
     permissions:
       actions: write
@@ -650,8 +650,8 @@ jobs:
 
 # ─── LINUX VPS JOB ───────────────────────────────────────────────────────────
   vps-setup:
-    if: "!startsWith(inputs.windows_version, 'windows') && !startsWith(inputs.windows_version, 'win') && !startsWith(inputs.windows_version, 'mac') && inputs.windows_version != ''"
-    runs-on: ${{ (inputs.windows_version == 'ubuntu-24.04' || inputs.windows_version == 'ubuntu24-ai' || inputs.windows_version == 'ubuntu24-gui-ai') && 'ubuntu-24.04' || ((inputs.windows_version == 'ubuntu-22.04' || inputs.windows_version == 'ubuntu22-ai' || inputs.windows_version == 'ubuntu22-gui-ai') && 'ubuntu-22.04' || 'ubuntu-latest') }}
+    if: github.event.inputs.windows_version != '' && github.event.inputs.windows_version != null && !startsWith(github.event.inputs.windows_version, 'windows') && !startsWith(github.event.inputs.windows_version, 'win') && !startsWith(github.event.inputs.windows_version, 'mac')
+    runs-on: ${{ (github.event.inputs.windows_version == 'ubuntu-24.04' || github.event.inputs.windows_version == 'ubuntu24-ai' || github.event.inputs.windows_version == 'ubuntu24-gui-ai') && 'ubuntu-24.04' || ((github.event.inputs.windows_version == 'ubuntu-22.04' || github.event.inputs.windows_version == 'ubuntu22-ai' || github.event.inputs.windows_version == 'ubuntu22-gui-ai') && 'ubuntu-22.04' || 'ubuntu-latest') }}
     timeout-minutes: 360
     permissions:
       actions: write
