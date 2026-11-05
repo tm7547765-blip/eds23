@@ -78,7 +78,7 @@ jobs:
           Remove-Item ngrok.zip
           Copy-Item .\ngrok.exe C:\Windows\System32\ngrok.exe -Force
 
-      # ── 2. RAM / Disk ────────────────────────────────────────────────────
+                # ── 2. RAM / Disk ────────────────────────────────────────────────────
       - name: Optimize Disk and Configure RAM
         shell: pwsh
         run: |
@@ -95,7 +95,7 @@ jobs:
           $freeGB = [Math]::Round((Get-PSDrive C).Free / 1GB, 1)
           Write-Output "[+] Free disk: $freeGB GB"
 
-      # ── 3. RDP + Firewall ─────────────────────────────────────────────────
+                # ── 3. RDP + Firewall ─────────────────────────────────────────────────
       - name: Enable RDP and Firewall
         shell: pwsh
         run: |
@@ -124,7 +124,7 @@ jobs:
           }
           if (-not $ready) { Restart-Service -Name "TermService" -Force; Start-Sleep -Seconds 2 }
 
-      # ── 4. Create VEXOR User ──────────────────────────────────────────────
+                # ── 4. Create VEXOR User ──────────────────────────────────────────────
       - name: Create VEXOR Admin User
         shell: pwsh
         run: |
@@ -142,7 +142,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path "C:\Users\VEXOR\.config\vexor" | Out-Null
           Write-Output "[+] User VEXOR created with password VEXOR@2026"
 
-      # ── 5. Ngrok Tunnel ───────────────────────────────────────────────────
+                # ── 5. Ngrok Tunnel ───────────────────────────────────────────────────
       - name: Configure and Start Ngrok Tunnel
         id: ngrok-tunnel
         shell: pwsh
@@ -188,7 +188,7 @@ jobs:
             exit 1
           }
 
-      # ── 6. Build .rdp Artifact (bug fixed — no duplicate $url) ───────────
+                # ── 6. Build .rdp Artifact (bug fixed — no duplicate $url) ───────────
       - name: Build and Upload .rdp Artifact
         shell: pwsh
         run: |
@@ -267,7 +267,7 @@ jobs:
           }
           Write-Output "[+] OpenCode AI + REA configured"
 
-      # ── 8. Delta Restore + Baseline ───────────────────────────────────────
+                # ── 8. Delta Restore + Baseline ───────────────────────────────────────
       - name: Baseline Snapshot and Delta Restore
         continue-on-error: true
         shell: pwsh
@@ -402,7 +402,7 @@ jobs:
           '@
           Set-Content -Path "C:\sync_delta_apps.ps1" -Value $deltaScript -Encoding UTF8
 
-      # ── 9. Start VEXOR Services (Bots + Services from services.json) ──────
+                # ── 9. Start VEXOR Services (Bots + Services from services.json) ──────
       - name: Start VEXOR Services
         continue-on-error: true
         shell: pwsh
@@ -462,7 +462,7 @@ jobs:
           $pids | ConvertTo-Json | Set-Content $pidsFile
           Write-Output "[+] Service PIDs saved."
 
-      # ── 10. Keep Alive (watchdog + auto-restart at 350min) ───────────────
+                # ── 10. Keep Alive (watchdog + auto-restart at 350min) ───────────────
       - name: Keep Alive Session
         shell: pwsh
         env:
@@ -587,7 +587,7 @@ jobs:
                 "Content-Type"  = "application/json"
               }
               try {
-                Invoke-RestMethod "https://api.github.com/repos/$env:GH_REPO/actions/workflows/rdp.yml/dispatches" `
+                Invoke-RestMethod "https://api.github.com/repos/$env:GH_REPO/actions/workflows/main.yml/dispatches" `
                   -Method Post -Headers $headers -Body $body -ErrorAction Stop
                 Write-Output "[+] Next session triggered! Exiting keep-alive."
                 $autoTriggered = $true
@@ -601,7 +601,7 @@ jobs:
             Start-Sleep -Seconds 120
           }
 
-      # ── 11. Cleanup ───────────────────────────────────────────────────────
+                # ── 11. Cleanup ───────────────────────────────────────────────────────
       - name: Cleanup and Final Sync
         if: always()
         shell: pwsh
@@ -639,7 +639,7 @@ jobs:
               "Content-Type"  = "application/json"
             }
             try {
-              Invoke-RestMethod "https://api.github.com/repos/$env:GH_REPO/actions/workflows/rdp.yml/dispatches" `
+              Invoke-RestMethod "https://api.github.com/repos/$env:GH_REPO/actions/workflows/main.yml/dispatches" `
                 -Method Post -Headers $headers -Body $body -ErrorAction SilentlyContinue | Out-Null
               Write-Output "[+] Fallback: next session triggered from cleanup."
             } catch {}
@@ -699,7 +699,7 @@ jobs:
           sudo sed -i '/^\[Xorg\]/,/^\[/ s/^password=.*/password=VEXOR@2026/' /etc/xrdp/xrdp.ini
           echo "TARGET_PORT=3389" >> $GITHUB_ENV
 
-      # ── 2. Kali Tools (GUI variant) ───────────────────────────────────────
+                # ── 2. Kali Tools (GUI variant) ───────────────────────────────────────
       - name: Setup Kali Offensive Tools
         if: "endsWith(inputs.windows_version, '-gui') || endsWith(inputs.windows_version, '-gui-ai')"
         run: |
@@ -746,7 +746,7 @@ jobs:
           sudo systemctl restart xrdp-sesman || sudo service xrdp-sesman restart || true
           sudo systemctl restart xrdp        || sudo service xrdp restart        || true
 
-      # ── 3. Native Ubuntu SSH ──────────────────────────────────────────────
+                # ── 3. Native Ubuntu SSH ──────────────────────────────────────────────
       - name: Setup Native Ubuntu VPS SSH
         if: "(startsWith(inputs.windows_version, 'ubuntu') || startsWith(inputs.windows_version, 'ubuntu2')) && !contains(inputs.windows_version, '-gui')"
         run: |
@@ -765,7 +765,7 @@ jobs:
           EOF
           echo "TARGET_PORT=22" >> $GITHUB_ENV
 
-      # ── 4. Containerized Distros ──────────────────────────────────────────
+                # ── 4. Containerized Distros ──────────────────────────────────────────
       - name: Setup Containerized Distro VPS
         if: "!startsWith(inputs.windows_version, 'ubuntu') && !startsWith(inputs.windows_version, 'ubuntu2') && !endsWith(inputs.windows_version, '-gui') && !endsWith(inputs.windows_version, '-gui-ai')"
         run: |
@@ -776,128 +776,128 @@ jobs:
           if [[ "$TARGET_OS" =~ ^debian ]]; then
             DOCKER_IMG="debian:12"
             cat > /tmp/setup.sh << 'VXEOF'
-#!/bin/sh
-DEBIAN_FRONTEND=noninteractive apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends openssh-server sudo curl wget nano bash procps passwd
-mkdir -p /var/run/sshd /etc/ssh/sshd_config.d
-echo 'root:VEXOR@2026' | chpasswd
-useradd -m -s /bin/bash runner
-echo 'runner:VEXOR@2026' | chpasswd
-usermod -aG sudo runner
-echo 'runner ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd 2>/dev/null || true
-echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
-echo 'KbdInteractiveAuthentication yes' >> /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
-echo '=== VEXOR Debian 12 VPS ===' >> /home/runner/.bashrc
-exec /usr/sbin/sshd -D
-VXEOF
+          #!/bin/sh
+          DEBIAN_FRONTEND=noninteractive apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends openssh-server sudo curl wget nano bash procps passwd
+          mkdir -p /var/run/sshd /etc/ssh/sshd_config.d
+          echo 'root:VEXOR@2026' | chpasswd
+          useradd -m -s /bin/bash runner
+          echo 'runner:VEXOR@2026' | chpasswd
+          usermod -aG sudo runner
+          echo 'runner ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+          sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd 2>/dev/null || true
+          echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'KbdInteractiveAuthentication yes' >> /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
+          echo '=== VEXOR Debian 12 VPS ===' >> /home/runner/.bashrc
+          exec /usr/sbin/sshd -D
+          VXEOF
           elif [[ "$TARGET_OS" =~ ^kali ]]; then
             DOCKER_IMG="kalilinux/kali-rolling"
             cat > /tmp/setup.sh << 'VXEOF'
-#!/bin/sh
-DEBIAN_FRONTEND=noninteractive apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends openssh-server sudo curl wget nano bash procps passwd nmap netcat-traditional
-mkdir -p /var/run/sshd /etc/ssh/sshd_config.d
-echo 'root:VEXOR@2026' | chpasswd
-useradd -m -s /bin/bash runner
-echo 'runner:VEXOR@2026' | chpasswd
-usermod -aG sudo runner
-echo 'runner ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd 2>/dev/null || true
-echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
-echo 'KbdInteractiveAuthentication yes' >> /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
-echo '=== VEXOR Kali Linux VPS ===' >> /home/runner/.bashrc
-exec /usr/sbin/sshd -D
-VXEOF
+          #!/bin/sh
+          DEBIAN_FRONTEND=noninteractive apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends openssh-server sudo curl wget nano bash procps passwd nmap netcat-traditional
+          mkdir -p /var/run/sshd /etc/ssh/sshd_config.d
+          echo 'root:VEXOR@2026' | chpasswd
+          useradd -m -s /bin/bash runner
+          echo 'runner:VEXOR@2026' | chpasswd
+          usermod -aG sudo runner
+          echo 'runner ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+          sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd 2>/dev/null || true
+          echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'KbdInteractiveAuthentication yes' >> /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
+          echo '=== VEXOR Kali Linux VPS ===' >> /home/runner/.bashrc
+          exec /usr/sbin/sshd -D
+          VXEOF
           elif [[ "$TARGET_OS" =~ ^alpine ]]; then
             DOCKER_IMG="alpine:latest"
             cat > /tmp/setup.sh << 'VXEOF'
-#!/bin/sh
-apk update
-apk add --no-cache openssh bash sudo curl wget nano procps shadow
-ssh-keygen -A
-mkdir -p /etc/ssh/sshd_config.d
-echo 'root:VEXOR@2026' | chpasswd
-adduser -D -s /bin/bash runner
-echo 'runner:VEXOR@2026' | chpasswd
-echo 'runner ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
-echo '=== VEXOR Alpine VPS ===' >> /home/runner/.bashrc
-exec /usr/sbin/sshd -D
-VXEOF
+          #!/bin/sh
+          apk update
+          apk add --no-cache openssh bash sudo curl wget nano procps shadow
+          ssh-keygen -A
+          mkdir -p /etc/ssh/sshd_config.d
+          echo 'root:VEXOR@2026' | chpasswd
+          adduser -D -s /bin/bash runner
+          echo 'runner:VEXOR@2026' | chpasswd
+          echo 'runner ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+          echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
+          echo '=== VEXOR Alpine VPS ===' >> /home/runner/.bashrc
+          exec /usr/sbin/sshd -D
+          VXEOF
           elif [[ "$TARGET_OS" =~ ^arch ]]; then
             DOCKER_IMG="archlinux:latest"
             cat > /tmp/setup.sh << 'VXEOF'
-#!/bin/sh
-sed -i 's/SigLevel.*=.*Required.*/SigLevel = Never/' /etc/pacman.conf
-pacman -Sy --noconfirm openssh sudo curl wget nano bash procps-ng shadow
-ssh-keygen -A
-mkdir -p /etc/ssh/sshd_config.d
-echo 'root:VEXOR@2026' | chpasswd
-useradd -m -s /bin/bash runner
-echo 'runner:VEXOR@2026' | chpasswd
-echo 'runner ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd 2>/dev/null || true
-echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
-echo '=== VEXOR Arch Linux VPS ===' >> /home/runner/.bashrc
-exec /usr/sbin/sshd -D
-VXEOF
+          #!/bin/sh
+          sed -i 's/SigLevel.*=.*Required.*/SigLevel = Never/' /etc/pacman.conf
+          pacman -Sy --noconfirm openssh sudo curl wget nano bash procps-ng shadow
+          ssh-keygen -A
+          mkdir -p /etc/ssh/sshd_config.d
+          echo 'root:VEXOR@2026' | chpasswd
+          useradd -m -s /bin/bash runner
+          echo 'runner:VEXOR@2026' | chpasswd
+          echo 'runner ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+          sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd 2>/dev/null || true
+          echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
+          echo '=== VEXOR Arch Linux VPS ===' >> /home/runner/.bashrc
+          exec /usr/sbin/sshd -D
+          VXEOF
           elif [[ "$TARGET_OS" =~ ^fedora ]]; then
             DOCKER_IMG="fedora:40"
             cat > /tmp/setup.sh << 'VXEOF'
-#!/bin/sh
-dnf install -y --setopt=install_weak_deps=False --nodocs openssh-server passwd sudo curl wget nano bash procps-ng
-ssh-keygen -A
-mkdir -p /etc/ssh/sshd_config.d
-echo 'root:VEXOR@2026' | chpasswd
-useradd -m -s /bin/bash runner
-echo 'runner:VEXOR@2026' | chpasswd
-usermod -aG wheel runner
-echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd 2>/dev/null || true
-chmod 0640 /etc/shadow 2>/dev/null || true
-echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
-echo 'KbdInteractiveAuthentication yes' >> /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
-echo '=== VEXOR Fedora 40 VPS ===' >> /home/runner/.bashrc
-exec /usr/sbin/sshd -D
-VXEOF
+          #!/bin/sh
+          dnf install -y --setopt=install_weak_deps=False --nodocs openssh-server passwd sudo curl wget nano bash procps-ng
+          ssh-keygen -A
+          mkdir -p /etc/ssh/sshd_config.d
+          echo 'root:VEXOR@2026' | chpasswd
+          useradd -m -s /bin/bash runner
+          echo 'runner:VEXOR@2026' | chpasswd
+          usermod -aG wheel runner
+          echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+          sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd 2>/dev/null || true
+          chmod 0640 /etc/shadow 2>/dev/null || true
+          echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'KbdInteractiveAuthentication yes' >> /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
+          echo '=== VEXOR Fedora 40 VPS ===' >> /home/runner/.bashrc
+          exec /usr/sbin/sshd -D
+          VXEOF
           elif [[ "$TARGET_OS" =~ ^rocky ]]; then
             DOCKER_IMG="rockylinux:9"
             cat > /tmp/setup.sh << 'VXEOF'
-#!/bin/sh
-dnf install -y --setopt=install_weak_deps=False --nodocs openssh-server passwd sudo curl wget nano bash procps-ng
-ssh-keygen -A
-mkdir -p /etc/ssh/sshd_config.d
-echo 'root:VEXOR@2026' | chpasswd
-useradd -m -s /bin/bash runner
-echo 'runner:VEXOR@2026' | chpasswd
-usermod -aG wheel runner
-echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd 2>/dev/null || true
-chmod 0640 /etc/shadow 2>/dev/null || true
-echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
-echo 'KbdInteractiveAuthentication yes' >> /etc/ssh/sshd_config.d/01-auth.conf
-echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
-echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
-echo '=== VEXOR Rocky Linux 9 VPS ===' >> /home/runner/.bashrc
-exec /usr/sbin/sshd -D
-VXEOF
+          #!/bin/sh
+          dnf install -y --setopt=install_weak_deps=False --nodocs openssh-server passwd sudo curl wget nano bash procps-ng
+          ssh-keygen -A
+          mkdir -p /etc/ssh/sshd_config.d
+          echo 'root:VEXOR@2026' | chpasswd
+          useradd -m -s /bin/bash runner
+          echo 'runner:VEXOR@2026' | chpasswd
+          usermod -aG wheel runner
+          echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+          sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd 2>/dev/null || true
+          chmod 0640 /etc/shadow 2>/dev/null || true
+          echo 'PermitRootLogin yes'            > /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'KbdInteractiveAuthentication yes' >> /etc/ssh/sshd_config.d/01-auth.conf
+          echo 'PermitRootLogin yes'           >> /etc/ssh/sshd_config
+          echo 'PasswordAuthentication yes'    >> /etc/ssh/sshd_config
+          echo '=== VEXOR Rocky Linux 9 VPS ===' >> /home/runner/.bashrc
+          exec /usr/sbin/sshd -D
+          VXEOF
           fi
 
           chmod +x /tmp/setup.sh
@@ -905,7 +905,7 @@ VXEOF
           docker run -d --name vps --privileged -p 2222:22 -v /tmp/setup.sh:/setup.sh "$DOCKER_IMG" sh /setup.sh
           echo "TARGET_PORT=2222" >> $GITHUB_ENV
 
-      # ── 5. Wait for port ──────────────────────────────────────────────────
+                # ── 5. Wait for port ──────────────────────────────────────────────────
       - name: Wait for Service Port
         run: |
           port="${{ env.TARGET_PORT }}"
@@ -922,7 +922,7 @@ VXEOF
             sleep 1
           done
 
-      # ── 6. OpenCode AI + REA (Linux) ──────────────────────────────────────
+                # ── 6. OpenCode AI + REA (Linux) ──────────────────────────────────────
       - name: Install OpenCode AI and REA (Linux)
         continue-on-error: true
         run: |
@@ -945,7 +945,7 @@ VXEOF
           done
           echo "[+] OpenCode AI + REA ready on Linux"
 
-      # ── 7. Ngrok Tunnel (Linux) ───────────────────────────────────────────
+                # ── 7. Ngrok Tunnel (Linux) ───────────────────────────────────────────
       - name: Configure and Start Ngrok Tunnel
         id: ngrok-tunnel
         run: |
@@ -976,7 +976,7 @@ VXEOF
             exit 1
           fi
 
-      # ── 8. Build SSH connection info ──────────────────────────────────────
+                # ── 8. Build SSH connection info ──────────────────────────────────────
       - name: Build Connection Artifact
         run: |
           url="${{ steps.ngrok-tunnel.outputs.tunnel_url }}"
@@ -1050,7 +1050,7 @@ VXEOF
             rm -f /tmp/delta_restore.zip
           fi
 
-      # ── 10. Start VEXOR Services (Linux) ─────────────────────────────────
+                # ── 10. Start VEXOR Services (Linux) ─────────────────────────────────
       - name: Start VEXOR Services (Linux)
         continue-on-error: true
         env:
@@ -1127,7 +1127,7 @@ VXEOF
           print(f"[+] PIDs saved to {PIDS_FILE}")
           PYEOF
 
-      # ── 11. Linux Delta Exporter script ───────────────────────────────────
+                # ── 11. Linux Delta Exporter script ───────────────────────────────────
       - name: Create Linux Delta Sync Script
         run: |
           cat > /home/runner/sync_delta.sh << 'DELTAEOF'
@@ -1166,7 +1166,7 @@ VXEOF
           DELTAEOF
           chmod +x /home/runner/sync_delta.sh
 
-      # ── 12. Keep Alive (Linux) ────────────────────────────────────────────
+                # ── 12. Keep Alive (Linux) ────────────────────────────────────────────
       - name: Keep Alive Session
         env:
           CHAIN_ID:     ${{ inputs.chain_id }}
@@ -1206,20 +1206,20 @@ VXEOF
                 # Re-update Telegram webhooks
                 if [ -f "/home/runner/.config/vexor/services.json" ]; then
                   python3 -c "
-import json, urllib.request
-with open('/home/runner/.config/vexor/services.json') as f: svcs = json.load(f)
-for s in svcs:
-    if s.get('type') == 'telegram_bot' and s.get('bot_token') and '$NEW_URL':
-        wpath = s.get('webhook_path', '/webhook')
-        try:
+          import json, urllib.request
+          with open('/home/runner/.config/vexor/services.json') as f: svcs = json.load(f)
+          for s in svcs:
+              if s.get('type') == 'telegram_bot' and s.get('bot_token') and '$NEW_URL':
+                  wpath = s.get('webhook_path', '/webhook')
+                  try:
             data = json.dumps({'url': f'https://$NEW_URL{wpath}'}).encode()
             req = urllib.request.Request(f\"https://api.telegram.org/bot{s['bot_token']}/setWebhook\",
                                           data=data, headers={'Content-Type':'application/json'})
             urllib.request.urlopen(req, timeout=10)
             print(f\"[+] Webhook re-updated for {s['name']}\")
-        except Exception as e:
+                  except Exception as e:
             print(f\"[!] Webhook re-update failed: {e}\")
-" 2>/dev/null || true
+          " 2>/dev/null || true
                 fi
               fi
             fi
@@ -1227,41 +1227,41 @@ for s in svcs:
             # ── Services watchdog (every 5 loops = ~10 min) ────────────────
             if [ $((LOOPS % 5)) -eq 0 ] && [ -f "/home/runner/.config/vexor/pids.json" ]; then
               python3 << 'WDEOF'
-import json, os, subprocess, time
+          import json, os, subprocess, time
 
-PIDS_FILE = "/home/runner/.config/vexor/pids.json"
-SVCS_FILE = "/home/runner/.config/vexor/services.json"
+          PIDS_FILE = "/home/runner/.config/vexor/pids.json"
+          SVCS_FILE = "/home/runner/.config/vexor/services.json"
 
-if not os.path.exists(SVCS_FILE): exit(0)
-with open(PIDS_FILE) as f: pids = json.load(f)
-with open(SVCS_FILE) as f: svcs = json.load(f)
+          if not os.path.exists(SVCS_FILE): exit(0)
+          with open(PIDS_FILE) as f: pids = json.load(f)
+          with open(SVCS_FILE) as f: svcs = json.load(f)
 
-changed = False
-for svc in svcs:
-    name = svc["name"]
-    pid  = pids.get(name)
-    if not pid: continue
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        print(f"[!] {name} (PID {pid}) died — restarting...")
-        svc_type = svc.get("type", "process")
-        interp   = svc.get("interpreter", "python3")
-        wdir     = svc.get("working_dir", "/home/runner")
-        args     = svc.get("args", [])
-        if svc_type in ("telegram_bot", "telegram_bot_polling"): cmd = [interp, svc["path"]] + args
-        elif svc_type == "python": cmd = ["python3", svc["path"]] + args
-        elif svc_type == "node":   cmd = ["node",    svc["path"]] + args
-        else:                      cmd = [svc["path"]] + args
-        log = open(f"/home/runner/logs/{name}.log", "a")
-        proc = subprocess.Popen(cmd, cwd=wdir, stdout=log, stderr=log)
-        pids[name] = proc.pid
-        changed = True
-        print(f"[+] Restarted {name} PID: {proc.pid}")
+          changed = False
+          for svc in svcs:
+              name = svc["name"]
+              pid  = pids.get(name)
+              if not pid: continue
+              try:
+                  os.kill(pid, 0)
+              except ProcessLookupError:
+                  print(f"[!] {name} (PID {pid}) died — restarting...")
+                  svc_type = svc.get("type", "process")
+                  interp   = svc.get("interpreter", "python3")
+                  wdir     = svc.get("working_dir", "/home/runner")
+                  args     = svc.get("args", [])
+                  if svc_type in ("telegram_bot", "telegram_bot_polling"): cmd = [interp, svc["path"]] + args
+                  elif svc_type == "python": cmd = ["python3", svc["path"]] + args
+                  elif svc_type == "node":   cmd = ["node",    svc["path"]] + args
+                  else:                      cmd = [svc["path"]] + args
+                  log = open(f"/home/runner/logs/{name}.log", "a")
+                  proc = subprocess.Popen(cmd, cwd=wdir, stdout=log, stderr=log)
+                  pids[name] = proc.pid
+                  changed = True
+                  print(f"[+] Restarted {name} PID: {proc.pid}")
 
-if changed:
-    with open(PIDS_FILE, "w") as f: json.dump(pids, f)
-WDEOF
+          if changed:
+              with open(PIDS_FILE, "w") as f: json.dump(pids, f)
+          WDEOF
             fi
 
             # ── Delta sync (every 5 loops) ──────────────────────────────────
@@ -1278,25 +1278,25 @@ WDEOF
               fi
 
               BODY=$(python3 -c "
-import json
-print(json.dumps({
-    'ref': '$GH_REF',
-    'inputs': {
-        'windows_version': '$WIN_VERSION',
-        'ram_size': '$RAM_SIZE',
-        'ngrok_token': '$NGROK_TOKEN',
-        'ngrok_region': '$NGROK_REGION',
-        'chain_id': '$CHAIN_ID',
-        'auto_restart': 'true'
-    }
-}))
-")
+          import json
+          print(json.dumps({
+              'ref': '$GH_REF',
+              'inputs': {
+                  'windows_version': '$WIN_VERSION',
+                  'ram_size': '$RAM_SIZE',
+                  'ngrok_token': '$NGROK_TOKEN',
+                  'ngrok_region': '$NGROK_REGION',
+                  'chain_id': '$CHAIN_ID',
+                  'auto_restart': 'true'
+              }
+          }))
+          ")
               HTTP_CODE=$(curl -s -o /tmp/gh_trigger_resp.txt -w "%{http_code}" \
                 -X POST \
                 -H "Authorization: token $GH_TOKEN" \
                 -H "Accept: application/vnd.github.v3+json" \
                 -H "Content-Type: application/json" \
-                "https://api.github.com/repos/$GH_REPO/actions/workflows/rdp.yml/dispatches" \
+                "https://api.github.com/repos/$GH_REPO/actions/workflows/main.yml/dispatches" \
                 -d "$BODY")
 
               if [ "$HTTP_CODE" = "204" ]; then
@@ -1312,7 +1312,7 @@ print(json.dumps({
             sleep 120
           done
 
-      # ── 13. Cleanup (Linux) ───────────────────────────────────────────────
+                # ── 13. Cleanup (Linux) ───────────────────────────────────────────────
       - name: Cleanup and Final Sync
         if: always()
         env:
@@ -1332,24 +1332,24 @@ print(json.dumps({
           # Fallback trigger
           if [ "$AUTO_RESTART" = "true" ]; then
             BODY=$(python3 -c "
-import json
-print(json.dumps({
-    'ref': '$GH_REF',
-    'inputs': {
-        'windows_version': '$WIN_VERSION',
-        'ram_size': '$RAM_SIZE',
-        'ngrok_token': '$NGROK_TOKEN',
-        'ngrok_region': '$NGROK_REGION',
-        'chain_id': '$CHAIN_ID',
-        'auto_restart': 'true'
-    }
-}))
-")
+          import json
+          print(json.dumps({
+              'ref': '$GH_REF',
+              'inputs': {
+                  'windows_version': '$WIN_VERSION',
+                  'ram_size': '$RAM_SIZE',
+                  'ngrok_token': '$NGROK_TOKEN',
+                  'ngrok_region': '$NGROK_REGION',
+                  'chain_id': '$CHAIN_ID',
+                  'auto_restart': 'true'
+              }
+          }))
+          ")
             curl -s -X POST \
               -H "Authorization: token $GH_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Content-Type: application/json" \
-              "https://api.github.com/repos/$GH_REPO/actions/workflows/rdp.yml/dispatches" \
+              "https://api.github.com/repos/$GH_REPO/actions/workflows/main.yml/dispatches" \
               -d "$BODY" || true
             echo "[+] Fallback trigger sent from cleanup."
           fi
